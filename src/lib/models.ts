@@ -1,0 +1,378 @@
+export interface VideoModel {
+  id: string;
+  name: string;
+  provider: string;
+  maxDuration: number;
+  minDuration: number;
+  resolutions: { label: string; width: number; height: number }[];
+}
+
+export const VIDEO_MODELS: VideoModel[] = [
+  // ── Google Veo ──────────────────────────────────────────
+  {
+    id: "google:3@3",
+    name: "Veo 3",
+    provider: "Google",
+    minDuration: 8,
+    maxDuration: 8,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+    ],
+  },
+  {
+    id: "google:3@2",
+    name: "Veo 3 Fast",
+    provider: "Google",
+    minDuration: 8,
+    maxDuration: 8,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+    ],
+  },
+
+  // ── KlingAI ─────────────────────────────────────────────
+  {
+    id: "klingai:kling-video@3-pro",
+    name: "Kling VIDEO 3.0 Pro",
+    provider: "KlingAI",
+    minDuration: 5,
+    maxDuration: 10,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "klingai:kling-video@3-standard",
+    name: "Kling VIDEO 3.0 Standard",
+    provider: "KlingAI",
+    minDuration: 5,
+    maxDuration: 10,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "klingai:kling-video@o3-pro",
+    name: "Kling VIDEO O3 Pro",
+    provider: "KlingAI",
+    minDuration: 5,
+    maxDuration: 10,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "klingai:kling-video@o3-standard",
+    name: "Kling VIDEO O3 Standard",
+    provider: "KlingAI",
+    minDuration: 5,
+    maxDuration: 10,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "klingai:kling-video@2.6-pro",
+    name: "Kling VIDEO 2.6 Pro",
+    provider: "KlingAI",
+    minDuration: 5,
+    maxDuration: 10,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "klingai:kling-video@2.6-standard",
+    name: "Kling VIDEO 2.6 Standard",
+    provider: "KlingAI",
+    minDuration: 5,
+    maxDuration: 10,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "klingai:5@3",
+    name: "KlingAI 2.1 Master",
+    provider: "KlingAI",
+    minDuration: 5,
+    maxDuration: 10,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+
+  // ── MiniMax Hailuo ──────────────────────────────────────
+  {
+    id: "minimax:4@1",
+    name: "MiniMax Hailuo 2.3",
+    provider: "MiniMax",
+    minDuration: 6,
+    maxDuration: 10,
+    resolutions: [
+      { label: "768p (16:9)", width: 1360, height: 768 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "768p (9:16)", width: 768, height: 1360 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+    ],
+  },
+  {
+    id: "minimax:4@2",
+    name: "MiniMax Hailuo 2.3 Fast",
+    provider: "MiniMax",
+    minDuration: 6,
+    maxDuration: 10,
+    resolutions: [
+      { label: "768p (16:9)", width: 1360, height: 768 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "768p (9:16)", width: 768, height: 1360 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+    ],
+  },
+  {
+    id: "minimax:3@1",
+    name: "MiniMax Hailuo 02",
+    provider: "MiniMax",
+    minDuration: 5,
+    maxDuration: 10,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "512p (1:1)", width: 512, height: 512 },
+    ],
+  },
+
+  // ── ByteDance Seedance ──────────────────────────────────
+  {
+    id: "bytedance:seedance@1.5-pro",
+    name: "Seedance 1.5 Pro",
+    provider: "ByteDance",
+    minDuration: 3,
+    maxDuration: 12,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "bytedance:2@1",
+    name: "Seedance 1.0 Pro",
+    provider: "ByteDance",
+    minDuration: 3,
+    maxDuration: 12,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "bytedance:2@2",
+    name: "Seedance 1.0 Pro Fast",
+    provider: "ByteDance",
+    minDuration: 3,
+    maxDuration: 12,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "bytedance:1@1",
+    name: "Seedance 1.0 Lite",
+    provider: "ByteDance",
+    minDuration: 1,
+    maxDuration: 12,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "960p (9:16)", width: 540, height: 960 },
+      { label: "640p (1:1)", width: 640, height: 640 },
+    ],
+  },
+
+  // ── PixVerse ────────────────────────────────────────────
+  {
+    id: "pixverse:1@8",
+    name: "PixVerse V6",
+    provider: "PixVerse",
+    minDuration: 5,
+    maxDuration: 15,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "pixverse:1@7",
+    name: "PixVerse v5.6",
+    provider: "PixVerse",
+    minDuration: 5,
+    maxDuration: 8,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "pixverse:1@6",
+    name: "PixVerse v5.5",
+    provider: "PixVerse",
+    minDuration: 5,
+    maxDuration: 8,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "pixverse:1@5",
+    name: "PixVerse v5",
+    provider: "PixVerse",
+    minDuration: 5,
+    maxDuration: 5,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "pixverse:1@5-fast",
+    name: "PixVerse V5 Fast",
+    provider: "PixVerse",
+    minDuration: 5,
+    maxDuration: 5,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "pixverse:1@3",
+    name: "PixVerse v4.5",
+    provider: "PixVerse",
+    minDuration: 5,
+    maxDuration: 5,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+
+  // ── Vidu ────────────────────────────────────────────────
+  {
+    id: "vidu:3@2",
+    name: "Vidu Q2 Turbo",
+    provider: "Vidu",
+    minDuration: 4,
+    maxDuration: 8,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "vidu:3@1",
+    name: "Vidu Q2 Pro",
+    provider: "Vidu",
+    minDuration: 4,
+    maxDuration: 8,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "vidu:4@1",
+    name: "Vidu Q1",
+    provider: "Vidu",
+    minDuration: 4,
+    maxDuration: 8,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+  {
+    id: "vidu:1@0",
+    name: "Vidu Q1 Classic",
+    provider: "Vidu",
+    minDuration: 4,
+    maxDuration: 8,
+    resolutions: [
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "1080p (9:16)", width: 1080, height: 1920 },
+      { label: "1080p (1:1)", width: 1080, height: 1080 },
+    ],
+  },
+
+  // ── Alibaba Wan ─────────────────────────────────────────
+  {
+    id: "alibaba:wan@2.7",
+    name: "Wan 2.7",
+    provider: "Alibaba",
+    minDuration: 3,
+    maxDuration: 8,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+  {
+    id: "alibaba:wan@2.6",
+    name: "Wan 2.6",
+    provider: "Alibaba",
+    minDuration: 3,
+    maxDuration: 8,
+    resolutions: [
+      { label: "720p (16:9)", width: 1280, height: 720 },
+      { label: "1080p (16:9)", width: 1920, height: 1080 },
+      { label: "720p (9:16)", width: 720, height: 1280 },
+      { label: "720p (1:1)", width: 720, height: 720 },
+    ],
+  },
+];
