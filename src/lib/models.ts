@@ -5,6 +5,8 @@ export interface VideoModel {
   maxDuration: number;
   minDuration: number;
   resolutions: { label: string; width: number; height: number }[];
+  supportsImageToVideo: boolean;
+  supportsLastFrame: boolean;
 }
 
 export const VIDEO_MODELS: VideoModel[] = [
@@ -21,6 +23,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "1080p (9:16)", width: 1080, height: 1920 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
   {
     id: "google:3@2",
@@ -34,6 +38,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "1080p (9:16)", width: 1080, height: 1920 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
 
   // ── KlingAI ─────────────────────────────────────────────
@@ -48,6 +54,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "klingai:kling-video@3-standard",
@@ -60,6 +68,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "klingai:kling-video@o3-pro",
@@ -72,6 +82,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "klingai:kling-video@o3-standard",
@@ -84,6 +96,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "klingai:kling-video@2.6-pro",
@@ -96,6 +110,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "klingai:kling-video@2.6-standard",
@@ -108,6 +124,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "klingai:5@3",
@@ -120,6 +138,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
 
   // ── MiniMax Hailuo ──────────────────────────────────────
@@ -135,6 +155,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "768p (9:16)", width: 768, height: 1360 },
       { label: "1080p (9:16)", width: 1080, height: 1920 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
   {
     id: "minimax:4@2",
@@ -148,6 +170,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "768p (9:16)", width: 768, height: 1360 },
       { label: "1080p (9:16)", width: 1080, height: 1920 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
   {
     id: "minimax:3@1",
@@ -162,6 +186,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "512p (1:1)", width: 512, height: 512 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
 
   // ── ByteDance Seedance ──────────────────────────────────
@@ -177,6 +203,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
   {
     id: "bytedance:2@1",
@@ -190,6 +218,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
   {
     id: "bytedance:2@2",
@@ -203,6 +233,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
   {
     id: "bytedance:1@1",
@@ -215,6 +247,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "960p (9:16)", width: 540, height: 960 },
       { label: "640p (1:1)", width: 640, height: 640 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
 
   // ── PixVerse ────────────────────────────────────────────
@@ -231,6 +265,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "pixverse:1@7",
@@ -244,6 +280,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "pixverse:1@6",
@@ -257,6 +295,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "pixverse:1@5",
@@ -270,6 +310,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "pixverse:1@5-fast",
@@ -283,6 +325,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
   {
     id: "pixverse:1@3",
@@ -296,6 +340,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
 
   // ── Vidu ────────────────────────────────────────────────
@@ -310,6 +356,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "vidu:3@1",
@@ -322,6 +370,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "vidu:4@1",
@@ -334,6 +384,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
   {
     id: "vidu:1@0",
@@ -346,6 +398,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "1080p (9:16)", width: 1080, height: 1920 },
       { label: "1080p (1:1)", width: 1080, height: 1080 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: true,
   },
 
   // ── Alibaba Wan ─────────────────────────────────────────
@@ -361,6 +415,8 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
   {
     id: "alibaba:wan@2.6",
@@ -374,5 +430,7 @@ export const VIDEO_MODELS: VideoModel[] = [
       { label: "720p (9:16)", width: 720, height: 1280 },
       { label: "720p (1:1)", width: 720, height: 720 },
     ],
+    supportsImageToVideo: true,
+    supportsLastFrame: false,
   },
 ];

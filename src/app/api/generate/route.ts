@@ -4,7 +4,7 @@ import { Runware, type IRequestVideo } from "@runware/sdk-js";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prompt, negativePrompt, model, width, height, duration } = body;
+    const { prompt, negativePrompt, model, width, height, duration, seedImage, lastFrameImage } = body;
 
     if (!prompt || !model) {
       return NextResponse.json(
@@ -32,6 +32,18 @@ export async function POST(req: NextRequest) {
       duration: duration || 5,
       ...(negativePrompt ? { negativePrompt } : {}),
     };
+
+    // Add frame images for image-to-video
+    if (seedImage || lastFrameImage) {
+      const frameImages: { image: string; frame: string }[] = [];
+      if (seedImage) {
+        frameImages.push({ image: seedImage, frame: "first" });
+      }
+      if (lastFrameImage) {
+        frameImages.push({ image: lastFrameImage, frame: "last" });
+      }
+      params.inputs = { frameImages } as IRequestVideo["inputs"];
+    }
 
     const response = await runware.videoInference(params);
 

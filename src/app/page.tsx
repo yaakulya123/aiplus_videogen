@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { VIDEO_MODELS, VideoModel } from "@/lib/models";
 
 export default function Home() {
@@ -12,6 +12,13 @@ export default function Home() {
   const [duration, setDuration] = useState(VIDEO_MODELS[0].minDuration);
   const [modelSearch, setModelSearch] = useState("");
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+
+  const [seedImage, setSeedImage] = useState<string | null>(null);
+  const [seedImageName, setSeedImageName] = useState<string | null>(null);
+  const [lastFrameImage, setLastFrameImage] = useState<string | null>(null);
+  const [lastFrameImageName, setLastFrameImageName] = useState<string | null>(null);
+  const seedInputRef = useRef<HTMLInputElement>(null);
+  const lastFrameInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(false);
   const [videoURL, setVideoURL] = useState<string | null>(null);
@@ -37,6 +44,36 @@ export default function Home() {
     setDuration(model.minDuration);
     setModelDropdownOpen(false);
     setModelSearch("");
+    // Clear last frame image if the new model doesn't support it
+    if (!model.supportsLastFrame) {
+      setLastFrameImage(null);
+      setLastFrameImageName(null);
+    }
+  }
+
+  function handleImageUpload(
+    file: File,
+    setter: (val: string | null) => void,
+    nameSetter: (val: string | null) => void
+  ) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setter(reader.result as string);
+      nameSetter(file.name);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleDrop(
+    e: React.DragEvent,
+    setter: (val: string | null) => void,
+    nameSetter: (val: string | null) => void
+  ) {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      handleImageUpload(file, setter, nameSetter);
+    }
   }
 
   async function handleGenerate() {
@@ -59,6 +96,8 @@ export default function Home() {
           width: res.width,
           height: res.height,
           duration,
+          seedImage: seedImage || undefined,
+          lastFrameImage: lastFrameImage || undefined,
         }),
       });
 
@@ -85,7 +124,7 @@ export default function Home() {
             AI+ Video Generator
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Generate videos from text prompts
+            Generate videos from text prompts and images
           </p>
         </div>
 
@@ -120,6 +159,128 @@ export default function Home() {
             />
           )}
         </div>
+
+        {/* Image Inputs */}
+        {selectedModel.supportsImageToVideo && (
+          <div className="space-y-4">
+            <label className="block text-sm font-medium">
+              Reference Images{" "}
+              <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+
+            <div className={`grid gap-4 ${selectedModel.supportsLastFrame ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
+              {/* First Frame / Seed Image */}
+              <div>
+                <p className="text-xs text-gray-500 mb-2">
+                  {selectedModel.supportsLastFrame ? "First frame" : "Seed image"}
+                </p>
+                <input
+                  ref={seedInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file, setSeedImage, setSeedImageName);
+                  }}
+                />
+                {seedImage ? (
+                  <div className="relative rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                    <img
+                      src={seedImage}
+                      alt="Seed image"
+                      className="w-full h-40 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center group">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSeedImage(null);
+                          setSeedImageName(null);
+                          if (seedInputRef.current) seedInputRef.current.value = "";
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 bg-white rounded-md text-sm font-medium"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <div className="px-3 py-2 text-xs text-gray-500 truncate">
+                      {seedImageName}
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => seedInputRef.current?.click()}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(e, setSeedImage, setSeedImageName)}
+                    className="w-full h-40 rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-400 transition-colors flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-xs">Click or drop image</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Last Frame (only for models that support it) */}
+              {selectedModel.supportsLastFrame && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">Last frame</p>
+                  <input
+                    ref={lastFrameInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file, setLastFrameImage, setLastFrameImageName);
+                    }}
+                  />
+                  {lastFrameImage ? (
+                    <div className="relative rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                      <img
+                        src={lastFrameImage}
+                        alt="Last frame image"
+                        className="w-full h-40 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center group">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLastFrameImage(null);
+                            setLastFrameImageName(null);
+                            if (lastFrameInputRef.current) lastFrameInputRef.current.value = "";
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 bg-white rounded-md text-sm font-medium"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <div className="px-3 py-2 text-xs text-gray-500 truncate">
+                        {lastFrameImageName}
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => lastFrameInputRef.current?.click()}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleDrop(e, setLastFrameImage, setLastFrameImageName)}
+                      className="w-full h-40 rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-400 transition-colors flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-xs">Click or drop image</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Controls Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -251,7 +412,7 @@ export default function Home() {
               Generating...
             </span>
           ) : (
-            "Generate Video"
+            seedImage ? "Generate Video from Image" : "Generate Video"
           )}
         </button>
 
