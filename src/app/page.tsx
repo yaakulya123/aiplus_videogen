@@ -3,6 +3,9 @@
 import { useState, useMemo, useRef } from "react";
 import { VIDEO_MODELS, VideoModel } from "@/lib/models";
 
+// Runware caps positive and negative prompts at 2500 characters.
+const PROMPT_MAX = 2500;
+
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
@@ -130,6 +133,11 @@ export default function Home() {
         }
       }
 
+      // For models that infer output size from the uploaded image (e.g. Kling),
+      // the API rejects explicit width/height once frameImages is present.
+      const skipDimensions =
+        selectedModel.imageInheritsResolution === true && !!seedDataUrl;
+
       const submitRes = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -137,8 +145,8 @@ export default function Home() {
           prompt: prompt.trim(),
           negativePrompt: negativePrompt.trim() || undefined,
           model: selectedModelId,
-          width: res.width,
-          height: res.height,
+          width: skipDimensions ? undefined : res.width,
+          height: skipDimensions ? undefined : res.height,
           duration,
           seedImage: seedDataUrl,
           lastFrameImage: lastFrameDataUrl,
@@ -178,10 +186,20 @@ export default function Home() {
 
         {/* Prompt */}
         <div>
-          <label className="block text-sm font-medium mb-2">Prompt</label>
+          <div className="flex items-baseline justify-between mb-2">
+            <label className="block text-sm font-medium">Prompt</label>
+            <span
+              className={`text-xs ${
+                prompt.length > PROMPT_MAX ? "text-red-600" : "text-gray-400"
+              }`}
+            >
+              {prompt.length} / {PROMPT_MAX}
+            </span>
+          </div>
           <textarea
             value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
+            onChange={(e) => setPrompt(e.target.value.slice(0, PROMPT_MAX))}
+            maxLength={PROMPT_MAX}
             placeholder="Describe the video you want to generate..."
             rows={4}
             className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none placeholder:text-gray-400"
@@ -198,13 +216,21 @@ export default function Home() {
             {showNegative ? "- Hide" : "+ Add"} negative prompt
           </button>
           {showNegative && (
-            <textarea
-              value={negativePrompt}
-              onChange={(e) => setNegativePrompt(e.target.value)}
-              placeholder="What to avoid in the video..."
-              rows={2}
-              className="w-full mt-2 rounded-lg border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none placeholder:text-gray-400"
-            />
+            <>
+              <textarea
+                value={negativePrompt}
+                onChange={(e) =>
+                  setNegativePrompt(e.target.value.slice(0, PROMPT_MAX))
+                }
+                maxLength={PROMPT_MAX}
+                placeholder="What to avoid in the video..."
+                rows={2}
+                className="w-full mt-2 rounded-lg border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none placeholder:text-gray-400"
+              />
+              <div className="mt-1 text-right text-xs text-gray-400">
+                {negativePrompt.length} / {PROMPT_MAX}
+              </div>
+            </>
           )}
         </div>
 

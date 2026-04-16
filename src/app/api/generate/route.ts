@@ -28,10 +28,12 @@ export async function POST(req: NextRequest) {
       deliveryMethod: "async",
       model,
       positivePrompt: prompt,
-      width: width || 1280,
-      height: height || 720,
       duration: duration || 5,
     };
+    // width/height are optional — some models (e.g. Kling with frameImages)
+    // reject them and infer dimensions from the uploaded image.
+    if (typeof width === "number") task.width = width;
+    if (typeof height === "number") task.height = height;
     if (negativePrompt) task.negativePrompt = negativePrompt;
     if (seedImage || lastFrameImage) {
       const frameImages: { image: string; frame: string }[] = [];
@@ -92,10 +94,14 @@ async function submitWithResolutionFallback(
   if ("taskUUID" in first) return first;
 
   const err = first.apiError;
-  if (err.code === "unsupportedModelResolution") {
+  if (
+    err.code === "unsupportedModelResolution" &&
+    typeof task.width === "number" &&
+    typeof task.height === "number"
+  ) {
     const allowed = parseAllowedResolutions(err.allowedValues);
     const best = allowed.length
-      ? pickClosestResolution(task.width as number, task.height as number, allowed)
+      ? pickClosestResolution(task.width, task.height, allowed)
       : null;
     if (best) {
       task.width = best.width;

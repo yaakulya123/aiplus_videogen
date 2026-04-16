@@ -9,6 +9,10 @@ export interface VideoModel {
   resolutions: { label: string; width: number; height: number }[];
   supportsImageToVideo: boolean;
   supportsLastFrame: boolean;
+  // When true, the API rejects explicit width/height once `inputs.frameImages`
+  // is provided — output dimensions are inferred from the uploaded image.
+  // True for KlingAI models.
+  imageInheritsResolution?: boolean;
 }
 
 // Curated from Runware's per-model docs. Resolutions are the exact
@@ -64,6 +68,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     ],
     supportsImageToVideo: true,
     supportsLastFrame: true,
+    imageInheritsResolution: true,
   },
   {
     id: "bytedance:seedance@1.5-pro",
