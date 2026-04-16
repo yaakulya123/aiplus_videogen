@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Runware, type IRequestVideo } from "@runware/sdk-js";
 
+export const maxDuration = 120;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -33,7 +35,8 @@ export async function POST(req: NextRequest) {
       ...(negativePrompt ? { negativePrompt } : {}),
     };
 
-    // Add frame images for image-to-video
+    // Add frame images for image-to-video — sent as a top-level parameter,
+    // not wrapped in `inputs` (the API rejects `inputs` for video models).
     if (seedImage || lastFrameImage) {
       const frameImages: { image: string; frame: string }[] = [];
       if (seedImage) {
@@ -42,7 +45,7 @@ export async function POST(req: NextRequest) {
       if (lastFrameImage) {
         frameImages.push({ image: lastFrameImage, frame: "last" });
       }
-      params.inputs = { frameImages } as IRequestVideo["inputs"];
+      params.frameImages = frameImages;
     }
 
     const response = await runware.videoInference(params);
@@ -61,8 +64,12 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: unknown) {
     console.error("Video generation error:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to generate video";
+    let message = "Failed to generate video";
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (typeof error === "object" && error !== null) {
+      message = JSON.stringify(error);
+    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

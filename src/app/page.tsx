@@ -13,10 +13,12 @@ export default function Home() {
   const [modelSearch, setModelSearch] = useState("");
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
 
-  const [seedImage, setSeedImage] = useState<string | null>(null);
-  const [seedImageName, setSeedImageName] = useState<string | null>(null);
-  const [lastFrameImage, setLastFrameImage] = useState<string | null>(null);
-  const [lastFrameImageName, setLastFrameImageName] = useState<string | null>(null);
+  const [seedFile, setSeedFile] = useState<File | null>(null);
+  const [seedPreview, setSeedPreview] = useState<string | null>(null);
+  const [seedName, setSeedName] = useState<string | null>(null);
+  const [lastFrameFile, setLastFrameFile] = useState<File | null>(null);
+  const [lastFramePreview, setLastFramePreview] = useState<string | null>(null);
+  const [lastFrameName, setLastFrameName] = useState<string | null>(null);
   const seedInputRef = useRef<HTMLInputElement>(null);
   const lastFrameInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,36 +46,51 @@ export default function Home() {
     setDuration(model.minDuration);
     setModelDropdownOpen(false);
     setModelSearch("");
-    // Clear last frame image if the new model doesn't support it
-    if (!model.supportsLastFrame) {
-      setLastFrameImage(null);
-      setLastFrameImageName(null);
-    }
+    if (!model.supportsLastFrame) clearLastFrame();
   }
 
-  function handleImageUpload(
-    file: File,
-    setter: (val: string | null) => void,
-    nameSetter: (val: string | null) => void
-  ) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      setter(reader.result as string);
-      nameSetter(file.name);
-    };
-    reader.readAsDataURL(file);
+  function setSeed(file: File) {
+    if (seedPreview) URL.revokeObjectURL(seedPreview);
+    setSeedFile(file);
+    setSeedPreview(URL.createObjectURL(file));
+    setSeedName(file.name);
+    setError(null);
   }
 
-  function handleDrop(
-    e: React.DragEvent,
-    setter: (val: string | null) => void,
-    nameSetter: (val: string | null) => void
-  ) {
+  function clearSeed() {
+    if (seedPreview) URL.revokeObjectURL(seedPreview);
+    setSeedFile(null);
+    setSeedPreview(null);
+    setSeedName(null);
+    if (seedInputRef.current) seedInputRef.current.value = "";
+  }
+
+  function setLastFrame(file: File) {
+    if (lastFramePreview) URL.revokeObjectURL(lastFramePreview);
+    setLastFrameFile(file);
+    setLastFramePreview(URL.createObjectURL(file));
+    setLastFrameName(file.name);
+    setError(null);
+  }
+
+  function clearLastFrame() {
+    if (lastFramePreview) URL.revokeObjectURL(lastFramePreview);
+    setLastFrameFile(null);
+    setLastFramePreview(null);
+    setLastFrameName(null);
+    if (lastFrameInputRef.current) lastFrameInputRef.current.value = "";
+  }
+
+  function handleDropSeed(e: React.DragEvent) {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) {
-      handleImageUpload(file, setter, nameSetter);
-    }
+    if (file) setSeed(file);
+  }
+
+  function handleDropLastFrame(e: React.DragEvent) {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) setLastFrame(file);
   }
 
   async function handleGenerate() {
@@ -86,6 +103,33 @@ export default function Home() {
     const res = selectedModel.resolutions[resolutionIndex];
 
     try {
+      let seedDataUrl: string | undefined;
+      let lastFrameDataUrl: string | undefined;
+
+      if (seedFile) {
+        try {
+          seedDataUrl = await processImageForAPI(seedFile, res.width, res.height);
+        } catch {
+          throw new Error(
+            `Could not read first-frame image "${seedFile.name}". Try a JPG or PNG.`
+          );
+        }
+      }
+
+      if (lastFrameFile && selectedModel.supportsLastFrame) {
+        try {
+          lastFrameDataUrl = await processImageForAPI(
+            lastFrameFile,
+            res.width,
+            res.height
+          );
+        } catch {
+          throw new Error(
+            `Could not read last-frame image "${lastFrameFile.name}". Try a JPG or PNG.`
+          );
+        }
+      }
+
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -96,8 +140,8 @@ export default function Home() {
           width: res.width,
           height: res.height,
           duration,
-          seedImage: seedImage || undefined,
-          lastFrameImage: lastFrameImage || undefined,
+          seedImage: seedDataUrl,
+          lastFrameImage: lastFrameDataUrl,
         }),
       });
 
@@ -181,31 +225,27 @@ export default function Home() {
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) handleImageUpload(file, setSeedImage, setSeedImageName);
+                    if (file) setSeed(file);
                   }}
                 />
-                {seedImage ? (
+                {seedPreview ? (
                   <div className="relative rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
                     <img
-                      src={seedImage}
+                      src={seedPreview}
                       alt="Seed image"
                       className="w-full h-40 object-cover"
                     />
                     <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center group">
                       <button
                         type="button"
-                        onClick={() => {
-                          setSeedImage(null);
-                          setSeedImageName(null);
-                          if (seedInputRef.current) seedInputRef.current.value = "";
-                        }}
+                        onClick={clearSeed}
                         className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 bg-white rounded-md text-sm font-medium"
                       >
                         Remove
                       </button>
                     </div>
                     <div className="px-3 py-2 text-xs text-gray-500 truncate">
-                      {seedImageName}
+                      {seedName}
                     </div>
                   </div>
                 ) : (
@@ -213,7 +253,7 @@ export default function Home() {
                     type="button"
                     onClick={() => seedInputRef.current?.click()}
                     onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleDrop(e, setSeedImage, setSeedImageName)}
+                    onDrop={handleDropSeed}
                     className="w-full h-40 rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-400 transition-colors flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-gray-600"
                   >
                     <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,31 +275,27 @@ export default function Home() {
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) handleImageUpload(file, setLastFrameImage, setLastFrameImageName);
+                      if (file) setLastFrame(file);
                     }}
                   />
-                  {lastFrameImage ? (
+                  {lastFramePreview ? (
                     <div className="relative rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
                       <img
-                        src={lastFrameImage}
+                        src={lastFramePreview}
                         alt="Last frame image"
                         className="w-full h-40 object-cover"
                       />
                       <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center group">
                         <button
                           type="button"
-                          onClick={() => {
-                            setLastFrameImage(null);
-                            setLastFrameImageName(null);
-                            if (lastFrameInputRef.current) lastFrameInputRef.current.value = "";
-                          }}
+                          onClick={clearLastFrame}
                           className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 bg-white rounded-md text-sm font-medium"
                         >
                           Remove
                         </button>
                       </div>
                       <div className="px-3 py-2 text-xs text-gray-500 truncate">
-                        {lastFrameImageName}
+                        {lastFrameName}
                       </div>
                     </div>
                   ) : (
@@ -267,7 +303,7 @@ export default function Home() {
                       type="button"
                       onClick={() => lastFrameInputRef.current?.click()}
                       onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => handleDrop(e, setLastFrameImage, setLastFrameImageName)}
+                      onDrop={handleDropLastFrame}
                       className="w-full h-40 rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-400 transition-colors flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-gray-600"
                     >
                       <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -412,7 +448,7 @@ export default function Home() {
               Generating...
             </span>
           ) : (
-            seedImage ? "Generate Video from Image" : "Generate Video"
+            seedFile ? "Generate Video from Image" : "Generate Video"
           )}
         </button>
 
@@ -462,4 +498,100 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+// ─── Image processing ───────────────────────────────────────────
+// Accept any image input (JPG, PNG, WebP, GIF, BMP, SVG, etc.), decode it,
+// center-crop to the target aspect ratio, downscale to a reasonable max
+// dimension, flatten onto white, and return a JPEG data URL.
+async function processImageForAPI(
+  file: File,
+  targetWidth: number,
+  targetHeight: number
+): Promise<string> {
+  const MAX_DIM = 1280;
+  const targetAR = targetWidth / targetHeight;
+
+  const source = await decodeImage(file);
+  const srcW = source.width;
+  const srcH = source.height;
+  if (!srcW || !srcH) {
+    closeSource(source);
+    throw new Error("Image has no pixel data");
+  }
+
+  // Center crop to target aspect ratio
+  const srcAR = srcW / srcH;
+  let sx = 0;
+  let sy = 0;
+  let sw = srcW;
+  let sh = srcH;
+  if (Math.abs(srcAR - targetAR) > 0.01) {
+    if (srcAR > targetAR) {
+      sw = Math.round(srcH * targetAR);
+      sx = Math.round((srcW - sw) / 2);
+    } else {
+      sh = Math.round(srcW / targetAR);
+      sy = Math.round((srcH - sh) / 2);
+    }
+  }
+
+  // Downscale on the longer edge, never upscale
+  let dw = sw;
+  let dh = sh;
+  const longEdge = Math.max(dw, dh);
+  if (longEdge > MAX_DIM) {
+    const scale = MAX_DIM / longEdge;
+    dw = Math.max(1, Math.round(dw * scale));
+    dh = Math.max(1, Math.round(dh * scale));
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = dw;
+  canvas.height = dh;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    closeSource(source);
+    throw new Error("Canvas 2D unavailable");
+  }
+  // Flatten any transparency onto white — most video models expect opaque input
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, dw, dh);
+  ctx.drawImage(source, sx, sy, sw, sh, 0, 0, dw, dh);
+  closeSource(source);
+
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
+type DecodedImage = ImageBitmap | HTMLImageElement;
+
+async function decodeImage(file: File): Promise<DecodedImage> {
+  // Preferred path: createImageBitmap decodes off the main thread and handles
+  // every format the browser natively supports.
+  if (typeof createImageBitmap === "function") {
+    try {
+      return await createImageBitmap(file);
+    } catch {
+      // fall through to HTMLImageElement
+    }
+  }
+  // Fallback: HTMLImageElement via blob URL. Works for SVGs and older browsers.
+  const url = URL.createObjectURL(file);
+  try {
+    return await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("decode failed"));
+      img.src = url;
+    });
+  } catch (e) {
+    URL.revokeObjectURL(url);
+    throw e;
+  }
+}
+
+function closeSource(source: DecodedImage) {
+  if (typeof (source as ImageBitmap).close === "function") {
+    (source as ImageBitmap).close();
+  }
 }
