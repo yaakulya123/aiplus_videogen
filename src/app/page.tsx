@@ -130,7 +130,7 @@ export default function Home() {
         }
       }
 
-      const response = await fetch("/api/generate", {
+      const submitRes = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -145,13 +145,17 @@ export default function Home() {
         }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Generation failed");
+      const submitData = await parseJsonResponse(submitRes);
+      const submitError = typeof submitData?.error === "string" ? submitData.error : null;
+      if (!submitRes.ok || submitError) {
+        throw new Error(submitError || `Request failed (${submitRes.status})`);
       }
+      const taskUUID =
+        typeof submitData?.taskUUID === "string" ? submitData.taskUUID : null;
+      if (!taskUUID) throw new Error("Server returned no task ID");
 
-      setVideoURL(data.videoURL);
+      const videoURL = await pollUntilDone(taskUUID);
+      setVideoURL(videoURL);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -330,7 +334,7 @@ export default function Home() {
             >
               <span className="block truncate">{selectedModel.name}</span>
               <span className="block text-xs text-gray-400 truncate">
-                {selectedModel.provider} · {selectedModel.tagline}
+                {`${selectedModel.provider} · ${selectedModel.tagline}`}
               </span>
             </button>
 
@@ -366,7 +370,7 @@ export default function Home() {
                       >
                         <span className="block font-medium">{model.name}</span>
                         <span className="block text-xs text-gray-400">
-                          {model.provider} · {model.tagline}
+                          {`${model.provider} · ${model.tagline}`}
                         </span>
                       </button>
                     ))}
@@ -595,4 +599,64 @@ function closeSource(source: DecodedImage) {
   if (typeof (source as ImageBitmap).close === "function") {
     (source as ImageBitmap).close();
   }
+}
+
+// ─── Response parsing + polling ─────────────────────────────────
+// The response body may be HTML (e.g. a Vercel timeout page) instead of JSON.
+// Read as text first and parse defensively so real errors surface.
+async function parseJsonResponse(
+  res: Response
+): Promise<Record<string, unknown> | null> {
+  const raw = await res.text();
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+async function pollUntilDone(uuid: string): Promise<string> {
+  const MAX_WAIT_MS = 5 * 60 * 1000;
+  const start = Date.now();
+  let delay = 2000;
+  let consecutiveNetworkErrors = 0;
+
+  while (Date.now() - start < MAX_WAIT_MS) {
+    await new Promise((r) => setTimeout(r, delay));
+    delay = Math.min(delay + 1000, 8000);
+
+    try {
+      const res = await fetch(`/api/status?uuid=${encodeURIComponent(uuid)}`);
+      const data = await parseJsonResponse(res);
+
+      if (!res.ok) {
+        throw new Error(
+          (data?.error as string | undefined) || `Status ${res.status}`
+        );
+      }
+
+      const status = data?.status;
+      if (status === "success" && typeof data?.videoURL === "string") {
+        return data.videoURL;
+      }
+      if (status === "error") {
+        throw new Error((data?.error as string) || "Generation failed");
+      }
+      consecutiveNetworkErrors = 0;
+      // else: still processing — loop
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // Only propagate explicit generation failures. Transient network errors
+      // retry until the overall timeout.
+      if (msg.includes("Generation failed") || msg.startsWith("Status 4")) {
+        throw err;
+      }
+      consecutiveNetworkErrors++;
+      if (consecutiveNetworkErrors >= 6) throw err;
+    }
+  }
+  throw new Error(
+    "Generation took longer than 5 minutes. Try a shorter duration or a faster model."
+  );
 }
