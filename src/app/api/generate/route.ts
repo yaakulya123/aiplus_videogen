@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
       ...(negativePrompt ? { negativePrompt } : {}),
     };
 
-    // Add frame images for image-to-video — sent as a top-level parameter,
-    // not wrapped in `inputs` (the API rejects `inputs` for video models).
+    // All models in the curated catalog accept image-to-video input via
+    // `inputs.frameImages`. Each entry's `frame` is "first" or "last".
     if (seedImage || lastFrameImage) {
       const frameImages: { image: string; frame: string }[] = [];
       if (seedImage) {
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       if (lastFrameImage) {
         frameImages.push({ image: lastFrameImage, frame: "last" });
       }
-      params.frameImages = frameImages;
+      params.inputs = { frameImages } as IRequestVideo["inputs"];
     }
 
     const response = await inferWithResolutionFallback(runware, params);
@@ -64,17 +64,13 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: unknown) {
     console.error("Video generation error:", error);
-    const message = friendlyError(error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: friendlyError(error) }, { status: 500 });
   }
 }
 
-// Each Runware video model has a hard-coded list of accepted width/height
-// pairs. If the UI sends a pair that isn't in that list, the API replies with
-// `unsupportedModelResolution` and returns the full allowed list. Rather than
-// try to keep 28 models' resolution tables in perfect sync, we catch that one
-// error, pick the allowed resolution closest to what the user asked for
-// (preferring the same aspect ratio), and retry once.
+// Safety net: if the API rejects the requested width/height (e.g. the model's
+// accepted list drifted from our catalog), pick the closest same-aspect match
+// from the `allowedValues` the API returns and retry once.
 async function inferWithResolutionFallback(
   runware: InstanceType<typeof Runware>,
   params: IRequestVideo
@@ -100,6 +96,7 @@ async function inferWithResolutionFallback(
 type ApiError = {
   code?: string;
   message?: string;
+  parameter?: unknown;
   allowedValues?: unknown;
 };
 
@@ -130,9 +127,6 @@ function pickClosestResolution(
   const targetAR = w / h;
   const targetArea = w * h;
 
-  // Prefer same-aspect matches (within 2% tolerance). If none, fall back to
-  // the overall closest match. Within a group, pick the one closest in pixel
-  // area to what the user asked for.
   const sameAspect = allowed.filter(
     (r) => Math.abs(r.width / r.height - targetAR) / targetAR < 0.02
   );

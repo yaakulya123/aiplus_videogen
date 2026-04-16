@@ -330,7 +330,7 @@ export default function Home() {
             >
               <span className="block truncate">{selectedModel.name}</span>
               <span className="block text-xs text-gray-400 truncate">
-                {selectedModel.provider}
+                {selectedModel.provider} · {selectedModel.tagline}
               </span>
             </button>
 
@@ -366,7 +366,7 @@ export default function Home() {
                       >
                         <span className="block font-medium">{model.name}</span>
                         <span className="block text-xs text-gray-400">
-                          {model.provider}
+                          {model.provider} · {model.tagline}
                         </span>
                       </button>
                     ))}
@@ -406,6 +406,7 @@ export default function Home() {
               type="range"
               min={selectedModel.minDuration}
               max={selectedModel.maxDuration}
+              step={selectedModel.durationStep}
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
               className="w-full mt-2 accent-gray-900"
