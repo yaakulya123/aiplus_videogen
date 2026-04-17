@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       task.inputs = { frameImages };
     }
 
-    const result = await submitWithResolutionFallback(apiKey, task);
+    const result = await submitWithFallbacks(apiKey, task);
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
@@ -84,9 +84,11 @@ async function submitTask(
   return { apiError: { message: "Runware returned no task UUID" } };
 }
 
-// Retry once against the model's allowed resolution list if the first attempt
-// is rejected for width/height. Everything else bubbles up as an error string.
-async function submitWithResolutionFallback(
+// Auto-fix known submission errors by adjusting the task and retrying once:
+//   - unsupportedModelResolution: pick the closest allowed width/height
+//   - unsupportedParameter on negativePrompt: strip it (some models don't
+//     accept negative prompts, e.g. Seedance)
+async function submitWithFallbacks(
   apiKey: string,
   task: Record<string, unknown>
 ): Promise<{ taskUUID: string } | { error: string }> {
@@ -94,6 +96,8 @@ async function submitWithResolutionFallback(
   if ("taskUUID" in first) return first;
 
   const err = first.apiError;
+
+  // Resolution mismatch → pick closest allowed pair
   if (
     err.code === "unsupportedModelResolution" &&
     typeof task.width === "number" &&
@@ -111,7 +115,26 @@ async function submitWithResolutionFallback(
       return { error: retry.apiError.message || "Failed to submit task" };
     }
   }
+
+  // Unsupported negativePrompt → drop it and retry
+  if (isParamError(err, "negativePrompt") && task.negativePrompt) {
+    delete task.negativePrompt;
+    const retry = await submitTask(apiKey, task);
+    if ("taskUUID" in retry) return retry;
+    return { error: retry.apiError.message || "Failed to submit task" };
+  }
+
   return { error: err.message || err.code || "Failed to submit task" };
+}
+
+function isParamError(err: ApiError, paramName: string): boolean {
+  if (err.code !== "unsupportedParameter") return false;
+  const p = err.parameter;
+  if (p === paramName) return true;
+  if (Array.isArray(p) && p.includes(paramName)) return true;
+  if (typeof err.message === "string" && err.message.includes(`'${paramName}'`))
+    return true;
+  return false;
 }
 
 function parseAllowedResolutions(raw: unknown): { width: number; height: number }[] {
